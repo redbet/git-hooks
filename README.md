@@ -8,12 +8,14 @@ Well, now you don't have to look like an ass anymore....
 
 This will syntax check changed rhtml and rb files before letting you make an ass of yourself.
 
-= Dependencies
+Dependencies
+------------
 
 * Ruby
 * git
 
-= Installation
+Installation
+------------
 
 <pre>
 curl -O  ~/.gittemplate/hooks/pre-commit https://github.com/redbet/git-hooks/blob/master/pre-commit
