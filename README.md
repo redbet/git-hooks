@@ -18,8 +18,8 @@ Installation
 ------------
 
 <pre>
-curl -O  ~/.gittemplate/hooks/pre-commit https://github.com/redbet/git-hooks/blob/master/pre-commit
-curl -O  ~/.gittemplate/hooks/ruby_syntax_check https://github.com/redbet/git-hooks/blob/master/ruby_syntax_check
+curl -O ~/.gittemplate/hooks/pre-commit https://raw.github.com/redbet/git-hooks/master/pre-commit
+curl -O ~/.gittemplate/hooks/ruby_syntax_check https://raw.github.com/redbet/git-hooks/master/ruby_syntax_check
 git config --global init.templatedir "~/.gittemplate"
 </pre>
 
