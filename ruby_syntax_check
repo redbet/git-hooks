@@ -1,0 +1,45 @@
+#!/usr/bin/env ruby
+
+# A hook script to verify that only syntactically valid ruby code is commited.
+# Called by git-commit with no arguments.  The hook should exit with non-zero
+# status after issuing an appropriate message if it wants to stop the commit.
+#
+# Put this code into a file called "pre-commit" inside your .git/hooks
+# directory, and make sure it is executable
+
+require 'open3'
+
+FILES = /\A(.+\.(e?rb|rhtml|task|rake|thor)|[Rr]akefile|[Tt]horfile)\z/
+git_diff = 'git diff-index --name-only --cached HEAD'
+git_stop = 'git config --bool hooks.stop-on-warnings'
+stop_on_warnings = `#{git_stop}`.chomp != "false"
+
+changed_ruby_files = `#{git_diff}`.split("\n").grep(FILES)
+
+ruby = `which ruby`.chomp
+problematic_files = changed_ruby_files.map do |file|
+  cmd = case file
+  when /\.erb\z/
+    "erb -xT - #{file} | #{ruby} -wc"
+  when /\.rhtml\z/
+    "erubis -xT - #{file} | #{ruby} -wc"
+  else
+    "#{ruby} -wc #{file}"
+  end
+
+  errors = Open3.popen3(cmd) { |_, _, err| err.readlines }
+
+  unless stop_on_warnings
+    errors.reject! { |line| line =~ /[0-9]+:\s+warning:/ }
+  end
+
+  unless errors.empty?
+    errors.map! { |line| line.sub(/#{file}:/, '') }
+    "#{file}:\n#{errors.join}"
+  end
+end.compact
+
+exit 0 if problematic_files.empty?
+
+$stderr.puts problematic_files.join("\n")
+exit 1
