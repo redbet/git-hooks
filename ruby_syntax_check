@@ -6,18 +6,16 @@
 #
 # Put this code into a file called "pre-commit" inside your .git/hooks
 # directory, and make sure it is executable
-
 require 'open3'
 
-FILES = /\A(.+\.(e?rb|rhtml|task|rake|thor)|[Rr]akefile|[Tt]horfile)\z/
-git_diff = 'git diff-index --name-only --cached HEAD'
-git_stop = 'git config --bool hooks.stop-on-warnings'
+FILES            = /\A[AM]\t+(.+\.(e?rb|rhtml|task|rake|thor)|[Rr]akefile|[Tt]horfile)\z/
+git_diff         = 'git diff-index --name-status --cached HEAD'
+git_stop         = 'git config --bool hooks.stop-on-warnings'
 stop_on_warnings = `#{git_stop}`.chomp != "false"
+changed          = `#{git_diff}`.split("\n").grep(FILES) { $1 }
+ruby             = `which ruby`.chomp
 
-changed_ruby_files = `#{git_diff}`.split("\n").grep(FILES)
-
-ruby = `which ruby`.chomp
-problematic_files = changed_ruby_files.map do |file|
+erroneous = changed.map do |file|
   cmd = case file
   when /\.erb\z/
     "erb -xT - #{file} | #{ruby} -wc"
@@ -39,7 +37,7 @@ problematic_files = changed_ruby_files.map do |file|
   end
 end.compact
 
-exit 0 if problematic_files.empty?
+exit 0 if erroneous.empty?
 
-$stderr.puts problematic_files.join("\n")
+$stderr.puts erroneous.join("\n")
 exit 1
