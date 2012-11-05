@@ -18,10 +18,11 @@ Installation
 ------------
 
 <pre>
+mkdir -p ~/.gittemplate/hooks
 curl -o ~/.gittemplate/hooks/pre-commit https://raw.github.com/redbet/git-hooks/master/pre-commit;chmod +x ~/.gittemplate/hooks/pre-commit
 curl -o ~/.gittemplate/hooks/ruby_syntax_check https://raw.github.com/redbet/git-hooks/master/ruby_syntax_check;chmod +x ~/.gittemplate/hooks/ruby_syntax_check
 git config --global init.templatedir "~/.gittemplate"
 </pre>
 
 Remember that any project that you have already cloned will not have this,
-unless you also copy the files to *that* project's .git/hooks directory (and make them executable)
+unless you also symlink the files to *that* project's .git/hooks directory.
