@@ -8,21 +8,22 @@
 # directory, and make sure it is executable
 require 'open3'
 
-FILES            = /\A[AM]\t+(.+\.(e?rb|rhtml|task|rake|thor)|[Rr]akefile|[Tt]horfile)\z/
-git_diff         = 'git diff-index --name-status --cached HEAD'
+FILES            = /\A(.*?)\s(.*?)\s(.*?)\s(.*)\s[AM]\t+(.+\.(e?rb|rhtml|task|rake|thor)|[Rr]akefile|[Tt]horfile)\z/
+git_diff         = 'git diff-index --full-index --cached HEAD'
 git_stop         = 'git config --bool hooks.stop-on-warnings'
 stop_on_warnings = `#{git_stop}`.chomp != "false"
 warnings         = /[0-9]+:\s+warning:/
-changed          = `#{git_diff}`.split("\n").grep(FILES) { $1 }
+changed          = `#{git_diff}`.split("\n").grep(FILES) { [$4, $5] }
 ruby             = `which ruby`.chomp
 
-erroneous = changed.map do |file|
-  cmd = case file
+erroneous = changed.map do |sha, file|
+  processor = case file
   when /\.erb\z/   then "erb -xT -"
   when /\.rhtml\z/ then "erubis -xT -"
   else                  "cat"
-  end + " #{file} | #{ruby} -cw"
+  end
 
+  cmd = "git cat-file -p #{sha} | #{processor} | #{ruby} -cw"
   errors = Open3.popen3(cmd) do |_, _, err|
     err.map do |line|
       next if line[warnings] && !stop_on_warnings
